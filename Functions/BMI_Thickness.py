@@ -2,6 +2,7 @@ from sklearn.linear_model import LinearRegression
 import pandas as pd
 import numpy as np
 
+
 class Filler:
     """
     A class to handle the filling of missing values in a DataFrame using linear regression.
@@ -18,6 +19,7 @@ class Filler:
     fill():
         Trains a linear regression model and fills missing values in the DataFrame based on the model.
     """
+
     def __init__(self, dataframe: pd.DataFrame, fill_bmi: bool = True):
         self._df = dataframe
         self._fill_bmi = fill_bmi
@@ -90,6 +92,7 @@ class Filler:
         """
         return self._df
 
+
 class FillerInterface:
     """
     A class to interface with the Filler class, performing preprocessing and filling operations.
@@ -108,6 +111,7 @@ class FillerInterface:
     fill():
         Calls _remove_zero_rows(), _replace_zeroes(), and then uses Filler to fill in missing values.
     """
+
     def __init__(self, dataframe: pd.DataFrame):
         self._df = dataframe
 
@@ -151,6 +155,7 @@ class FillerInterface:
             The DataFrame with filled missing values.
         """
         return self._df
+
 
 # Example usage
 if __name__ == '__main__':
