@@ -11,44 +11,41 @@ class Filler:
     ----------
     dataframe : pd.DataFrame
         The DataFrame containing data with potential missing values.
-    fill_bmi : bool
-        If True, the class will fill missing BMI values; otherwise, it will fill missing SkinThickness values.
+    columns_pair : list of lists
+        A list of column pairs to be processed for filling missing values.
 
     Methods:
     -------
     fill():
-        Trains a linear regression model and fills missing values in the DataFrame based on the model.
+        Trains linear regression models and fills missing values in the DataFrame based on the models.
     """
 
-    def __init__(self, dataframe: pd.DataFrame, fill_bmi: bool = True):
+    def __init__(self, dataframe: pd.DataFrame, columns_pair: list):
         self._df = dataframe
-        self._fill_bmi = fill_bmi
+        self._columns_pair = columns_pair
 
-    def _prepare_data(self) -> pd.DataFrame:
+    def _prepare_data(self, columns):
         """
-        Prepares the data for training by dropping rows with NaN values in both 'BMI' and 'SkinThickness'.
+        Prepares the data for training by dropping rows with NaN values in the specified columns.
+
+        Parameters:
+        columns : list
+            The columns to check for non-null values.
 
         Returns:
         pd.DataFrame
-            A DataFrame with rows containing non-null values for both columns.
+            A DataFrame with rows containing non-null values for the specified columns.
         """
-        train_data = self._df.dropna(subset=['BMI', 'SkinThickness'])
-        return train_data
+        return self._df.dropna(subset=columns)
 
     @staticmethod
-    def _train_model(X_train, y_train):
+    def _train_model(X_train:pd.DataFrame, y_train:pd.DataFrame):
         """
         Trains a linear regression model.
 
-        Parameters:
-        X_train : pd.DataFrame
-            The training features.
-        y_train : pd.Series
-            The target variable.
-
-        Returns:
-        LinearRegression
-            The trained linear regression model.
+        :param X_train: The training features.
+        :param y_train: The target variable.
+        :return: The trained linear regression model.
         """
         model = LinearRegression()
         model.fit(X_train, y_train)
@@ -56,39 +53,42 @@ class Filler:
 
     def fill(self):
         """
-        Trains a linear regression model and fills missing values in the DataFrame based on the model.
+        Trains linear regression models and fills missing values in the DataFrame based on the models.
         """
-        train_data = self._prepare_data()
+        for columns in self._columns_pair:
+            train_data = self._prepare_data(columns)
 
-        if self._fill_bmi:
-            # Fill missing BMI values based on SkinThickness
-            X_train = train_data[['SkinThickness']]
-            y_train = train_data['BMI']
-            model = Filler._train_model(X_train, y_train)
+            if len(columns) == 2:
+                feature_col, target_col = columns
 
-            missing_data = self._df[self._df['BMI'].isna()]
-            X_missing = missing_data[['SkinThickness']]
-            predictions = model.predict(X_missing)
-            self._df.loc[self._df['BMI'].isna(), 'BMI'] = predictions
-        else:
-            # Fill missing SkinThickness values based on BMI
-            X_train = train_data[['BMI']]
-            y_train = train_data['SkinThickness']
-            model = Filler._train_model(X_train, y_train)
+                # Check which column to fill
+                if self._df[feature_col].isna().any():
+                    # Fill missing values for feature_col based on target_col
+                    X_train = train_data[[target_col]]
+                    y_train = train_data[feature_col]
+                    model = Filler._train_model(X_train, y_train)
 
-            missing_data = self._df[self._df['SkinThickness'].isna()]
-            X_missing = missing_data[['BMI']]
-            predictions = model.predict(X_missing)
-            self._df.loc[self._df['SkinThickness'].isna(), 'SkinThickness'] = predictions
+                    missing_data = self._df[self._df[feature_col].isna()]
+                    X_missing = missing_data[[target_col]]
+                    predictions = model.predict(X_missing)
+                    self._df.loc[self._df[feature_col].isna(), feature_col] = predictions
+
+                if self._df[target_col].isna().any():
+                    # Fill missing values for target_col based on feature_col
+                    X_train = train_data[[feature_col]]
+                    y_train = train_data[target_col]
+                    model = Filler._train_model(X_train, y_train)
+
+                    missing_data = self._df[self._df[target_col].isna()]
+                    X_missing = missing_data[[feature_col]]
+                    predictions = model.predict(X_missing)
+                    self._df.loc[self._df[target_col].isna(), target_col] = predictions
 
     @property
-    def get_dataframe(self):
+    def get_dataframe(self) -> pd.DataFrame:
         """
-        Returns the processed DataFrame.
-
-        Returns:
-        pd.DataFrame
-            The DataFrame with filled missing values.
+        Returns the Dataframe of Class
+        :return: pd.Dataframe
         """
         return self._df
 
@@ -105,7 +105,7 @@ class FillerInterface:
     Methods:
     -------
     _remove_zero_rows():
-        Removes rows where both 'BMI' and 'SkinThickness' are zero.
+        Removes rows where both columns are zero.
     _replace_zeroes():
         Replaces zero values with NaN in specified columns.
     fill():
@@ -115,44 +115,44 @@ class FillerInterface:
     def __init__(self, dataframe: pd.DataFrame):
         self._df = dataframe
 
-    def _remove_zero_rows(self):
+    def _remove_zero_rows(self) -> None:
         """
-        Removes rows where both 'BMI' and 'SkinThickness' are zero.
+        Removes rows where both 'BMI' and 'SkinThickness' or other column pairs are zero.
         """
-        self._df = self._df[~((self._df['BMI'] == 0) & (self._df['SkinThickness'] == 0))]
+        self._df = self._df[~((self._df[['BMI', 'SkinThickness']].eq(0).all(axis=1)) |
+                              (self._df[['Glucose', 'Insulin']].eq(0).all(axis=1)))]
 
-    def _replace_zeroes(self):
+    def _replace_zeroes(self) -> None:
         """
-        Replaces zero values with NaN in the specified columns of the DataFrame.
+        Replaces zero values with NaN in specified columns of the DataFrame.
         """
         self._df.loc[self._df['BMI'] == 0, 'BMI'] = np.nan
         self._df.loc[self._df['SkinThickness'] == 0, 'SkinThickness'] = np.nan
+        self._df.loc[self._df['Glucose'] == 0, 'Glucose'] = np.nan
+        self._df.loc[self._df['Insulin'] == 0, 'Insulin'] = np.nan
 
-    def fill(self):
+    def fill(self) -> None:
         """
-        Performs preprocessing and filling of missing values.
+        Fills the missing values for BMI, SkinThickness, Glucose, Insulin columns
         """
         self._remove_zero_rows()
         self._replace_zeroes()
 
-        # Fill missing BMI values
-        bmi_filler = Filler(self._df, fill_bmi=True)
-        bmi_filler.fill()
+        # Define column pairs to be processed
+        columns_pairs = [['BMI', 'SkinThickness'], ['Glucose', 'Insulin']]
 
-        # Fill missing SkinThickness values
-        skin_filler = Filler(bmi_filler.get_dataframe, fill_bmi=False)
-        skin_filler.fill()
+        # Fill missing values for each column pair
+        filler = Filler(self._df, columns_pair=columns_pairs)
+        filler.fill()
 
-        self._df = skin_filler.get_dataframe
+        # Update the DataFrame with filled values
+        self._df = filler.get_dataframe
 
     @property
-    def get_dataframe(self):
+    def get_dataframe(self) -> pd.DataFrame:
         """
-        Returns the processed DataFrame.
-
-        Returns:
-        pd.DataFrame
-            The DataFrame with filled missing values.
+        Returns the Dataframe of Class
+        :return: pd.Dataframe
         """
         return self._df
 
@@ -160,9 +160,13 @@ class FillerInterface:
 # Example usage
 if __name__ == '__main__':
     try:
+        # Load the DataFrame from a CSV file
         df = pd.read_csv('../Data/diabetes.csv')
+        # Initialize FillerInterface with the DataFrame
         filler_interface = FillerInterface(df)
+        # Perform the filling process
         filler_interface.fill()
+        # Get the filled DataFrame
         filled_df = filler_interface.get_dataframe
         print(filled_df.head())
     except FileNotFoundError:
