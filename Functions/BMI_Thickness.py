@@ -11,8 +11,8 @@ class Filler:
         # Filter out rows with NaN values in both columns
         train_data = self._df.dropna(subset=['BMI', 'SkinThickness'])
         return train_data
-
-    def _train_model(self, X_train, y_train):
+    @staticmethod
+    def _train_model(X_train, y_train):
         model = LinearRegression()
         model.fit(X_train, y_train)
         return model
@@ -24,7 +24,7 @@ class Filler:
             # Fill missing BMI values based on SkinThickness
             X_train = train_data[['SkinThickness']]
             y_train = train_data['BMI']
-            model = self._train_model(X_train, y_train)
+            model = Filler._train_model(X_train, y_train)
 
             missing_data = self._df[self._df['BMI'].isna()]
             X_missing = missing_data[['SkinThickness']]
@@ -34,7 +34,7 @@ class Filler:
             # Fill missing SkinThickness values based on BMI
             X_train = train_data[['BMI']]
             y_train = train_data['SkinThickness']
-            model = self._train_model(X_train, y_train)
+            model = Filler._train_model(X_train, y_train)
 
             missing_data = self._df[self._df['SkinThickness'].isna()]
             X_missing = missing_data[['BMI']]
