@@ -21,6 +21,8 @@ The dataset used in this project is the [Diabetes Dataset](https://www.kaggle.co
 
 A web application has been built using Flask, allowing users to input their health metrics and receive a diabetes prediction based on the trained Random Forest model. The application is user-friendly and provides both the predicted outcome (diabetic or non-diabetic) and the confidence level of the prediction.
 
+![](Screens/Web.png)
+
 ### Features
 
 - **User Input**: Users can input their health metrics such as glucose level, blood pressure, BMI, etc.

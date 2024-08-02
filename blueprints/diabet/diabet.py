@@ -1,13 +1,14 @@
 from flask import Blueprint, request, jsonify, render_template
 import joblib
-import numpy as np
 import pandas as pd
 
 diabetes_bp = Blueprint('diabetes', __name__, template_folder='templates')
 
+
 @diabetes_bp.route('/')
 def index():
     return render_template('index.html')
+
 
 @diabetes_bp.route('/predict', methods=['POST'])
 def predict():
@@ -27,7 +28,6 @@ def predict():
             'Age': int(request.form['age']),
             'Pregnancies_Binary': pregnancies_binary
         }
-
 
         # Create a DataFrame for prediction
         input_df = pd.DataFrame([data])
