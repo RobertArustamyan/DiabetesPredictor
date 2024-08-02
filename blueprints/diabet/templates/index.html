@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+            background-color: #4CAF50;
+            background-image: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
+            background-repeat: no-repeat;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        #predicted_outcome{
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        #confidence_level{
+
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            background-color: #f0f0f0;
+            margin-bottom: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            height: 15px;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+        }
+
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            display: block;
+            margin: 15px auto 0;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Diabetes Prediction Form</h1>
+<form action="/diabetes/predict" method="post">
+    <label for="insulin">Insulin:</label>
+    <input type="number" id="insulin" name="insulin" min="0" step="1" required><br>
+
+    <label for="glucose">Glucose:</label>
+    <input type="number" id="glucose" name="glucose" min="0" step="1" required><br>
+
+    <label for="bmi">BMI:</label>
+    <input type="number" id="bmi" name="bmi" min="0" step="0.1" required><br>
+
+    <label for="age">Age:</label>
+    <input type="number" id="age" name="age" min="0" step="1" required><br>
+
+    <label for="skinthickness">Skin Thickness:</label>
+    <input type="number" id="skinthickness" name="skinthickness" min="0" step="1" required><br>
+
+    <label for="dpf">Diabetes Pedigree Function:</label>
+    <input type="number" id="dpf" name="dpf" min="0" step="0.001" required><br>
+
+    <label for="bloodpressure">Blood Pressure:</label>
+    <input type="number" id="bloodpressure" name="bloodpressure" min="0" step="1" required><br>
+
+    <label for="pregnancies">Pregnancies:</label>
+    <input type="number" id="pregnancies" name="pregnancies" min="0" step="1" required><br>
+
+
+    <button type="submit">Predict Diabetes</button>
+    {% if prediction %}
+    <p id="predicted_outcome">Predicted Outcome: {{ prediction }}</p>
+    <p id="confidence_level">Confidence Level: {{ confidence }}%</p>
+    {% endif %}
+
+</form>
+</body>
+
+</html>
