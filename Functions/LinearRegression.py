@@ -128,8 +128,6 @@ class FillerInterface:
         """
         self._df.loc[self._df['BMI'] == 0, 'BMI'] = np.nan
         self._df.loc[self._df['SkinThickness'] == 0, 'SkinThickness'] = np.nan
-        self._df.loc[self._df['Glucose'] == 0, 'Glucose'] = np.nan
-        self._df.loc[self._df['Insulin'] == 0, 'Insulin'] = np.nan
 
     def fill(self) -> None:
         """
@@ -139,7 +137,7 @@ class FillerInterface:
         self._replace_zeroes()
 
         # Define column pairs to be processed
-        columns_pairs = [['BMI', 'SkinThickness'], ['Glucose', 'Insulin']]
+        columns_pairs = [['BMI', 'SkinThickness']]
 
         # Fill missing values for each column pair
         filler = Filler(self._df, columns_pair=columns_pairs)
